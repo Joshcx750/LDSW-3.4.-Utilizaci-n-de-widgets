@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "701558952054",
+    "project_id": "pokemon-flutter-udg",
+    "storage_bucket": "pokemon-flutter-udg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:701558952054:android:903533d481cf4d586e0f57",
+        "android_client_info": {
+          "package_name": "com.example.hello_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA18hHxEmPmPK8qJLcr5vjyD7bayl2keK0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../models/pokemon.dart';
 import '../services/pokemon_service.dart';
+import '../services/firestore_service.dart';
 
 class PokedexScreen extends StatefulWidget {
   const PokedexScreen({super.key});
@@ -14,6 +15,7 @@ class PokedexScreen extends StatefulWidget {
 class _PokedexScreenState extends State<PokedexScreen> {
 
   final PokemonService service = PokemonService();
+  final FirestoreService firestoreService = FirestoreService();
 
   final TextEditingController controller =
       TextEditingController();
@@ -21,6 +23,7 @@ class _PokedexScreenState extends State<PokedexScreen> {
   Pokemon? pokemon;
 
   bool loading = false;
+  bool saving = false;
   String? errorMessage;
 
   @override
@@ -31,6 +34,7 @@ class _PokedexScreenState extends State<PokedexScreen> {
     searchPokemon();
   }
 
+  // BUSCAR POKÉMON EN POKEAPI
   Future<void> searchPokemon() async {
 
     final name = controller.text.trim();
@@ -71,6 +75,49 @@ class _PokedexScreenState extends State<PokedexScreen> {
         );
         loading = false;
       });
+    }
+  }
+
+  // GUARDAR POKÉMON EN FIREBASE
+  Future<void> savePokemon() async {
+
+    if (pokemon == null || saving) return;
+
+    setState(() {
+      saving = true;
+    });
+
+    try {
+
+      await firestoreService.guardarPokemon(pokemon!);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Pokémon guardado en Firebase!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+    } catch (e) {
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+    } finally {
+
+      if (mounted) {
+        setState(() {
+          saving = false;
+        });
+      }
     }
   }
 
@@ -183,14 +230,55 @@ class _PokedexScreenState extends State<PokedexScreen> {
                 ),
               ),
 
-            if (pokemon != null)
+            if (pokemon != null) ...[
+
               buildPokemonCard(pokemon!),
+
+              const SizedBox(height: 15),
+
+              // BOTÓN GUARDAR EN FIREBASE
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+
+                child: ElevatedButton.icon(
+
+                  onPressed: saving ? null : savePokemon,
+
+                  icon: saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.cloud_upload),
+
+                  label: Text(
+                    saving
+                        ? 'GUARDANDO...'
+                        : 'GUARDAR EN FIREBASE',
+                  ),
+
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
+  // TARJETA DE INFORMACIÓN DEL POKÉMON
   Widget buildPokemonCard(Pokemon p) {
 
     return Card(
