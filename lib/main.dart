@@ -1,8 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 import 'firebase_options.dart';
-import 'screens/pokemon_screen.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/catalog_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,14 +24,45 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Mi Pokédex',
+      title: 'CineManía',
       theme: ThemeData(
+        brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFDC2626),
+          seedColor: const Color(0xFFE53935),
+          brightness: Brightness.dark,
         ),
         useMaterial3: true,
       ),
-      home: const PokedexScreen(),
+      home: const AuthGate(),
+    );
+  }
+}
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF101010),
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFFE53935),
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasData) {
+          return const CatalogScreen();
+        }
+
+        return const WelcomeScreen();
+      },
     );
   }
 }
